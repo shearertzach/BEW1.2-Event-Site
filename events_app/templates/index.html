@@ -14,10 +14,10 @@
 {% for event in all_events %}
 <div class="event-container">
     <h3><a href="/event/{{ event.id }}">{{ event.title }}</a></h3>
-    <p><strong>Date:</strong> {{ event.date_and_time }}</p>
+    <p><strong>Date:</strong> {{ event.date_and_time.strftime('%a %B %d, %Y') }}</p>
     <p><strong>Description:</strong> {{ event.description }}</p>
     <p class="small-text">
-        10 attending
+        {{ event.guests|length }} attending
     </p>
 </div>
 {% endfor %}

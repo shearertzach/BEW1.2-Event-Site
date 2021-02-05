@@ -2,7 +2,7 @@
 import os
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from datetime import date, datetime
-from events_app.models import Event, Guest
+from events_app.models import Event, Guest, guest_event_table
 
 # Import app and db from events_app package so that we can run app
 from events_app import app, db
@@ -26,7 +26,13 @@ def event_detail(event_id):
     """Show a single event."""
     # TODO: Get the event with the given id and send to the template
     event = Event.query.filter_by(id=event_id).one()
-    return render_template('event_detail.html', event=event)
+    event_guests = event.guests
+    context = {
+        'event': event,
+        'event_guests': event_guests
+    }
+
+    return render_template('event_detail.html', **context)
 
 
 @main.route('/event/<event_id>', methods=['POST'])
@@ -41,7 +47,7 @@ def rsvp(event_id):
         # TODO: Look up the guest by name, and add the event to their
         # events_attending, then commit to the database
         returning_guest = Guest.query.filter_by(name=guest_name).one()
-        returning_guest = Guest.events_attending = current_event
+        returning_guest.events_attending = [current_event]
         db.session.add(returning_guest)
         db.session.commit()
     else:
@@ -49,8 +55,8 @@ def rsvp(event_id):
         guest_phone = request.form.get('phone')
         # TODO: Create a new guest with the given name, email, and phone, and
         # add the event to their events_attending, then commit to the database
-        new_guest = Guest(name=guest_name, email=guest_email, phone=guest_phone, events_attending=[current_event])
-
+        new_guest = Guest(name=guest_name, email=guest_email,
+                          phone=guest_phone, events_attending=[current_event])
         db.session.add(new_guest)
         db.session.commit()
 
@@ -90,5 +96,6 @@ def create():
 @main.route('/guest/<guest_id>')
 def guest_detail(guest_id):
     # TODO: Get the guest with the given id and send to the template
+    guest = Guest.query.filter_by(id=guest_id).one()
 
-    return render_template('guest_detail.html')
+    return render_template('guest_detail.html', guest=guest)
